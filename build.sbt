@@ -1,5 +1,9 @@
 val scala3Version = "3.2.1"
 
+val TestDependencies = Seq(
+  "org.scalatest"  %% "scalatest"  % "3.2.14" % "test"
+)
+
 lazy val root = project
   .in(file("."))
   .settings(
@@ -9,4 +13,5 @@ lazy val root = project
     scalaVersion := scala3Version,
 
     libraryDependencies += "org.scalameta" %% "munit" % "0.7.29" % Test
+    , libraryDependencies ++= TestDependencies
   )
