@@ -14,17 +14,28 @@ object Day02 extends App:
             ("draw" -> 3),
             ("win" -> 6)
         )
-
+    
+    val moveCodesOpponent: Map[String, String] =
+        Map(
+            ("A" -> "rock"),
+            ("B" -> "paper"),
+            ("C" -> "scissors")
+        )
+    
+    def computeRoundScore(opponent: String, input2: String, input2Type: String, input2Codex: Map[String, String]): Int =
+        val opDec = moveCodesOpponent.get(opponent).get
+        val input2Dec = input2Codex.get(input2).get
+        input2Type match
+            case "move" => roundScores.get(findResult(opDec, input2Dec)).get + moveScores.get(input2Dec).get
+            case "result" => roundScores.get(input2Dec).get + moveScores.get(findMove(opDec, input2Dec)).get
+ 
     val instructions: List[(String, String)] =
         Source.fromResource("InputDay02.txt").getLines.toList.map(_.split(" ")).map({case Array(x,y) => (x,y)})
     
     // Part 1
 
-    val moveCodes: Map[String, String] =
+    val moveCodesYou: Map[String, String] =
         Map(
-            ("A" -> "rock"),
-            ("B" -> "paper"),
-            ("C" -> "scissors"),
             ("X" -> "rock"),
             ("Y" -> "paper"),
             ("Z" -> "scissors")
@@ -41,14 +52,7 @@ object Day02 extends App:
             case ("rock", "scissors") => "loss"
             case _ => sys.error(s"Undefined input: ${(opponent, you)}")
 
-    def computeRoundScore(opponent: String, you: String): Int =
-        val opDec = moveCodes.get(opponent).get
-        val youDec = moveCodes.get(you).get
-        roundScores.get(findResult(opDec, youDec)).get
-        +
-        moveScores.get(youDec).get
-
-    val answer1: Int = instructions.map((x,y) => computeRoundScore(x,y)).sum
+    val answer1: Int = instructions.map((x,y) => computeRoundScore(x, y, "move", moveCodesYou)).sum
     println(s"Result part 1: ${answer1}")
 
     // Part 2
@@ -73,12 +77,5 @@ object Day02 extends App:
             case ("scissors", "loss") => "paper"
             case _ => sys.error(s"Undefined input: ${(opponent, result)}")
 
-    def computeRoundScore2(opponent: String, result: String): Int =
-        val opDec = moveCodes.get(opponent).get
-        val resultDec = resultCodes.get(result).get
-        roundScores.get(resultDec).get
-        +
-        moveScores.get(findMove(opDec, resultDec)).get
-
-    val answer2: Int = instructions.map((x,y) => computeRoundScore2(x,y)).sum
+    val answer2: Int = instructions.map((x,y) => computeRoundScore(x, y, "result", resultCodes)).sum
     println(s"Result part 2: ${answer2}")
