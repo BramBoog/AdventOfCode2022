@@ -5,9 +5,8 @@ object Day03 extends App:
         Source.fromResource("InputDay03.txt").getLines.toList
 
     def itemPriority(item: Char): Int =
-        val num = item.asDigit - 9
-        if (item.isLower) num
-        else num + 26
+        if (item.isLower) item - 96
+        else item - 64 + 26
 
     // Part 1
 
