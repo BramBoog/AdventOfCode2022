@@ -26,6 +26,16 @@ class TestSolutions extends AnyFunSuite:
     assertResult("GSLCMFBRP")(actual = Day05.answer2)
   }
 
+  test("Day06") {
+    assertResult(1198)(actual = Day06.answer1)
+    assertResult(3120)(actual = Day06.answer2)
+  }
+
+  test("Day07") {
+    assertResult(1428881)(actual = Day07.answer1)
+    assertResult(10475598)(actual = Day07.answer2)
+  }
+  
   test("Day08") {
     assertResult(1763)(actual = Day08.answer1)
     assertResult(671160)(actual = Day08.answer2)
