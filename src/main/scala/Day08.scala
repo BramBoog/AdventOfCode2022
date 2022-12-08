@@ -30,5 +30,5 @@ object Day08 extends App:
             (tree, j) <- line.zipWithIndex
         yield ((i,j), countVisibleInLineFromTree(tree, line.drop(j + 1)) * countVisibleInLineFromTree(tree, line.reverse.drop(line.length - j)))
 
-    val answer2: Int = (treeScoresHorizontal(input) ::: treeScoresHorizontal(input.transpose).map((ij, s) => ((ij._2, ij._1), s))).groupBy(_._1).map(_._2.map(_._2).product).max
+    val answer2: Int = (treeScoresHorizontal(input) ::: treeScoresHorizontal(input.transpose).map((ij, s) => ((ij._2, ij._1), s))).groupBy(_._1).values.map(_.map(_._2).product).max
     println(s"Result part 2: ${answer2}")
