@@ -5,33 +5,18 @@ object Day15 extends App:
     case class Pos(x: Int, y: Int):
         def distance(that: Pos): Int =
             math.abs(that.x - x) + math.abs(that.y - y)
+    
+    case class Line(min: Int, max: Int)
 
     case class Sensor(pos: Pos, closestBeacon: Pos):
-        def exclusionZoneInLine(y: Int): Set[Pos] =
-            val beaconDistance = pos.distance(closestBeacon)
-            val lineDistance = pos.distance(Pos(pos.x, y))
-            if (beaconDistance < lineDistance) Set()
-            else
-                val diff = beaconDistance - lineDistance
-                val lineInX = Range(pos.x - diff, pos.x + diff + 1)
-                lineInX.map(x => Pos(x, y)).toSet -- sensorAndBeaconPositions
-        
-        def exclusionZone: Set[Pos] =
-            val maxDistance = pos.distance(closestBeacon)
-            for x <- Range(pos.x - maxDistance, pos.x + maxDistance + 1)
-            yield Range()
+        val distanceToBeacon: Int = pos.distance(closestBeacon)
 
-            val octant1 = Range(0, maxDistance + 1).combinations(2).map(l => Pos(l(0), l(1))).toSet
-            val octant2 = octant1.map(p => Pos(p.y, p.x))
-            val middleLine = (for i <- Range(1, maxDistance / 2 + 1) yield Pos(i, i)).toSet
-            val positiveQuadrant = (octant1 | octant2).filter(_.distance(Pos(0,0)) <= maxDistance) | middleLine
-            (
-                positiveQuadrant
-                | positiveQuadrant.map(p => Pos(-p.x, p.y))
-                | positiveQuadrant.map(p => Pos(p.x, -p.y))
-                | positiveQuadrant.map(p => Pos(-p.x, -p.y))
-            )
-            .map(delta => Pos(pos.x + delta.x, pos.y + delta.y))
+        def exclusionZoneOnY(y: Int): Option[Line] =
+            val lineDistance = pos.distance(Pos(pos.x, y))
+            if (distanceToBeacon < lineDistance) None
+            else
+                val diff = distanceToBeacon - lineDistance
+                Some(Line(pos.x - diff, pos.x + diff))
 
     def parseSensor(s: String): Sensor =
         s match
@@ -44,5 +29,33 @@ object Day15 extends App:
     val sensorAndBeaconPositions: Set[Pos] =
         sensors.foldLeft(Set())((set, sensor) => set | Set(sensor.pos, sensor.closestBeacon))
 
-    val answer1 = sensors.foldLeft(Set())((set: Set[Pos], sensor) => set | (sensor.exclusionZoneInLine(2000000))).size
+    val size: Int = 4000000
+
+    // Part 1
+
+    val answer1: Int =
+        val sensorAndBeaconPositions: Set[Int] = sensors.foldLeft(Set())((set, sensor) => set | Set(sensor.pos, sensor.closestBeacon).filter(_.y == size / 2).map(_.x))
+        sensors.flatMap(_.exclusionZoneOnY(size / 2))
+        .map(l => Range(l.min, l.max + 1).toSet)
+        .fold(Set())((acc, set) => acc | set)
+        .removedAll(sensorAndBeaconPositions)
+        .size
     println(s"Result part 1: ${answer1}")
+
+    // Part 2
+
+    def checkLine(y: Int, excludedRangesSorted: List[Line], x: Int = 0): Option[Pos] =
+        if (x >= size) None
+        else if (x < excludedRangesSorted.head.min)
+            Some(Pos(x, y))
+        else checkLine(y, excludedRangesSorted.tail.dropWhile(_.max <= excludedRangesSorted.head.max), excludedRangesSorted.head.max + 1)
+    
+    val answer2: Long =
+        val positionNotExcluded =
+            (
+            for y <- (1 to size)
+                if (checkLine(y, sensors.flatMap(_.exclusionZoneOnY(y)).sortBy(_.min))).isDefined
+            yield (checkLine(y, sensors.flatMap(_.exclusionZoneOnY(y)).sortBy(_.min))).get
+            ).head
+        positionNotExcluded.x.toLong * 4000000 + positionNotExcluded.y
+    println(s"Result part 2: ${answer2}")
