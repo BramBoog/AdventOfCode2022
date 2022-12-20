@@ -11,7 +11,7 @@ object Day11 extends App:
             val toMonkey = toWhichMonkey(newItem)
             monkeyMap.get(toMonkey) match
                 case None => sys.error(s"Couldn't find Monkey #${toMonkey} in the map.")
-                case Some(m) => monkeyMap + (toMonkey -> m.copy(items = m.items ::: List(newItem))) + (number -> this.copy(items = items.tail, amountInspected = amountInspected + 1)) 
+                case Some(m) => monkeyMap + (toMonkey -> m.copy(items = m.items :+ newItem)) + (number -> this.copy(items = items.tail, amountInspected = amountInspected + 1)) 
 
     def parseMonkey(strings: List[String]): Monkey =
         if (strings.length != 6) sys.error(s"Input Array: ${strings} did not contain the right amount of elements to parse into a Monkey.")
