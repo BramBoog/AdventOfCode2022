@@ -2,7 +2,7 @@ object Day17 extends App:
     import scala.io.Source
 
     val jetPattern: List[Char] =
-        Source.fromResource("ExampleDay17.txt").getLines.toList.head.toList
+        Source.fromResource("InputDay17.txt").getLines.toList.head.toList
 
     case class Pos(x: Int, y: Long)
 
@@ -31,32 +31,44 @@ object Day17 extends App:
                 case "vertical" => Rock((maxYInChamber + 4 to maxYInChamber + 7).toSet.map(y => Pos(3, y)))
                 case "square" => Rock(Set(Pos(3, maxYInChamber + 4), Pos(3, maxYInChamber + 5), Pos(4, maxYInChamber + 5), Pos(4, maxYInChamber + 4)))
 
-    val rocksInOrder: List[String] = List("horizontal", "plus", "L", "vertical", "square")
-
-    def dropRocksUntil(cutoff: Long, chamber: Set[Pos], curRock: Rock, tick: Int = 0, rockNumber: Long = 0): Set[Pos] =
+    def dropRocksUntil(cutoff: Long, chamber: Set[Pos], curRock: Rock, rocksInOrder: List[String], tick: Int = 0, rockNumber: Long = 0): Set[Pos] =
+        if (rockNumber == 37)
+            println(curRock.positions)
+            Set()
         if (rockNumber == cutoff) chamber 
         else if (!curRock.isMoving)
             val newChamber =
                 val added = chamber | curRock.positions
-                val fullLines =
-                    for y <- curRock.positions.map(_.y) if added.filter(_.y == y).size == 7
-                    yield y
-                if (!fullLines.isEmpty) added.filter(_.y >= fullLines.max)
-                else added
-            dropRocksUntil(cutoff, newChamber, Rock.spawn(rocksInOrder(((rockNumber + 1) % rocksInOrder.length).toInt), newChamber.map(_.y).max), tick % jetPattern.length, rockNumber + 1)
-        else dropRocksUntil(cutoff, chamber, curRock.moveOnTick(tick, chamber), (tick + 1) % jetPattern.length, rockNumber)
+                val newMaxY = added.map(_.y).max
+                val xsOnMaxY = added.filter(_.y == newMaxY).map(_.x)
+                if (xsOnMaxY.size == 7) println(s"Full line at: $newMaxY")
+                val newRock = Rock.spawn(rocksInOrder.head, newMaxY)
+                val sizeAtBottom = newRock.positions.filter(_.y == newRock.positions.map(_.y).min).size
+                if ((1 to 8 - sizeAtBottom).exists(x => ((x until x + sizeAtBottom).toSet & xsOnMaxY).size == 0))
+                    added
+                else
+                    println(s"Line too full for next rock at: $newMaxY")
+                    println(added)
+                    println(sizeAtBottom)
+                    println(added.filter(_.y >= newMaxY))
+                    added.filter(_.y >= newMaxY)
+            if (rockNumber == 36)
+                println(newChamber)
+            if (rockNumber % 1000000 == 0) println(rockNumber)
+            dropRocksUntil(cutoff, newChamber, Rock.spawn(rocksInOrder.head, newChamber.map(_.y).max), rocksInOrder.tail :+ rocksInOrder.head, tick % jetPattern.length, rockNumber + 1)
+        else dropRocksUntil(cutoff, chamber, curRock.moveOnTick(tick, chamber), rocksInOrder, (tick + 1) % jetPattern.length, rockNumber)
                 
     val chamberInit: Set[Pos] = (1 to 7).toSet.map(x => Pos(x, 0))
+    val rocksInOrderInit: List[String] = List("horizontal", "plus", "L", "vertical", "square")
 
     val start1: Long = System.currentTimeMillis
 
-    val answer1: Long = dropRocksUntil(2022, chamberInit, Rock.spawn(rocksInOrder(0), 0)).map(_.y).max
+    val answer1: Long = dropRocksUntil(2022, chamberInit, Rock.spawn(rocksInOrderInit.head, 0), rocksInOrderInit.tail :+ rocksInOrderInit.head).map(_.y).max
     println(s"Result part 1: ${answer1} in ${System.currentTimeMillis - start1}ms")
 
     // val start2: Long = System.currentTimeMillis
 
-    // val answer2: Long = dropRocksUntil(1000000000000L, chamberInit, Rock.spawn(rocksInOrder(0), 0)).map(_.y).max
+    // val answer2: Long = dropRocksUntil(1000000000000L, chamberInit, Rock.spawn(rocksInOrderInit.head, 0), rocksInOrderInit.tail :+ rocksInOrderInit.head).map(_.y).max
     // println(s"Result part 2: ${answer2} in ${System.currentTimeMillis - start2}ms")
     
-    // Naive: 5510ms
-    // With max of rock filled: 5619ms
+    // Part 1: 601ms
