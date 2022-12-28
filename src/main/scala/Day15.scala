@@ -26,15 +26,15 @@ object Day15 extends App:
     val sensors: List[Sensor] =
         Source.fromResource("InputDay15.txt").getLines.toList.map(parseSensor)
 
-    val sensorAndBeaconPositions: Set[Pos] =
-        sensors.foldLeft(Set())((set, sensor) => set | Set(sensor.pos, sensor.closestBeacon))
-
     val size: Int = 4000000
 
     // Part 1
 
     val answer1: Int =
-        val sensorAndBeaconPositions: Set[Int] = sensors.foldLeft(Set())((set, sensor) => set | Set(sensor.pos, sensor.closestBeacon).filter(_.y == size / 2).map(_.x))
+        val sensorAndBeaconPositions: Set[Int] =
+            sensors.foldLeft(Set())((set, sensor) => set | Set(sensor.pos, sensor.closestBeacon)
+            .filter(_.y == size / 2).map(_.x))
+        
         sensors.flatMap(_.exclusionZoneOnY(size / 2))
         .map(l => Range(l.min, l.max + 1).toSet)
         .fold(Set())((acc, set) => acc | set)
@@ -51,11 +51,6 @@ object Day15 extends App:
         else checkLine(y, excludedRangesSorted.tail.dropWhile(_.max <= excludedRangesSorted.head.max), excludedRangesSorted.head.max + 1)
     
     val answer2: Long =
-        val positionNotExcluded =
-            (
-            for y <- (1 to size)
-                if (checkLine(y, sensors.flatMap(_.exclusionZoneOnY(y)).sortBy(_.min))).isDefined
-            yield (checkLine(y, sensors.flatMap(_.exclusionZoneOnY(y)).sortBy(_.min))).get
-            ).head
+        val positionNotExcluded = (1 to size).flatMap(y => checkLine(y, sensors.flatMap(_.exclusionZoneOnY(y)).sortBy(_.min))).head
         positionNotExcluded.x.toLong * 4000000 + positionNotExcluded.y
     println(s"Result part 2: ${answer2}")
